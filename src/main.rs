@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use anyhow::{Context, Result};
 use clap::Parser;
 
+mod picker;
 mod sources;
 
 #[derive(Parser, Debug)]
@@ -55,14 +56,15 @@ fn main() -> Result<()> {
     let sources = sources::load()?;
     if let Some(nickname) = args.nickname {
         if let Some(file) = sources.nicknames.get(&nickname) {
-            open_in_editor(Path::new(file))?;
+            open_in_editor(file)?;
         } else {
             eprintln!("Nickname not found",);
         }
     } else {
-        get_all_files(&sources)
-            .iter()
-            .for_each(|f| println!("{f:?}"));
+        let files = get_all_files(&sources);
+        if let Some(file) = picker::select(&files)? {
+            open_in_editor(&file)?;
+        }
     }
 
     Ok(())

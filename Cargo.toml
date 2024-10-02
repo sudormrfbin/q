@@ -9,4 +9,5 @@ clap = { version = "4.5.19", features = ["derive"] }
 directories = "5.0.1"
 ignore = "0.4.23"
 serde = { version = "1.0.210", features = ["derive"] }
+skim = { version = "0.10.4", default-features = false }
 toml = "0.8.19"
