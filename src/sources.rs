@@ -9,7 +9,10 @@ use serde::Serialize;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Sources {
-    pub(crate) nicknames: HashMap<String, PathBuf>,
+    #[serde(default)]
+    pub nicknames: HashMap<String, PathBuf>,
+    #[serde(default)]
+    pub directories: Vec<PathBuf>,
 }
 
 impl Default for Sources {
@@ -17,7 +20,10 @@ impl Default for Sources {
         let hash_map = HashMap::new();
         let mut nicknames = hash_map;
         nicknames.insert("self".to_string(), path());
-        Self { nicknames }
+        Self {
+            nicknames,
+            directories: Vec::new(),
+        }
     }
 }
 
