@@ -28,16 +28,15 @@ fn open_in_editor(path: &Path) -> Result<()> {
     Ok(())
 }
 
-fn get_all_files(sources: &Sources) -> Vec<PathBuf> {
+fn get_all_files(sources: Sources) -> impl Iterator<Item = PathBuf> {
     sources
         .directories
-        .iter()
+        .into_iter()
         .map(|dir| WalkBuilder::new(dir).build())
         .flatten()
         .filter_map(|entry| entry.ok())
         .filter(|entry| entry.file_type().is_some_and(|e| e.is_file()))
         .map(|file| file.into_path())
-        .collect()
 
     // for dir in &sources.directories {
     //     let walker = WalkBuilder::new(dir).build();
@@ -61,8 +60,8 @@ fn main() -> Result<()> {
             eprintln!("Nickname not found",);
         }
     } else {
-        let files = get_all_files(&sources);
-        if let Some(file) = picker::select(&files)? {
+        let files = get_all_files(sources);
+        if let Some(file) = picker::select(files)? {
             open_in_editor(&file)?;
         }
     }

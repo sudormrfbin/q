@@ -19,12 +19,7 @@ impl SkimItem for FileItem {
     }
 }
 
-pub fn select(files: &[PathBuf]) -> Result<Option<PathBuf>> {
-    let items: Vec<FileItem> = files
-        .iter()
-        .map(|path| FileItem { path: path.clone() })
-        .collect();
-
+pub fn select(files: impl Iterator<Item = PathBuf> + Send + 'static) -> Result<Option<PathBuf>> {
     let options = SkimOptionsBuilder::default()
         .height(Some("40%"))
         // When setting height, this is apparently required to properly clear
@@ -36,10 +31,13 @@ pub fn select(files: &[PathBuf]) -> Result<Option<PathBuf>> {
         .context("Failed to build skim options")?;
 
     let (tx, rx): (SkimItemSender, SkimItemReceiver) = unbounded();
-    for item in items {
-        let _ = tx.send(Arc::new(item));
-    }
-    drop(tx);
+
+    std::thread::spawn(move || {
+        for path in files {
+            let _ = tx.send(Arc::new(FileItem { path }));
+        }
+        drop(tx);
+    });
 
     let selected = Skim::run_with(&options, Some(rx))
         .filter(|out| !out.is_abort)
